@@ -32,18 +32,18 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class ImmutableConciseSet
+public class ImmutableSecompaxSet
 {
   private final static int CHUNK_SIZE = 10000;
 
-  public static ImmutableConciseSet newImmutableFromMutable(ConciseSet conciseSet)
+  public static ImmutableSecompaxSet newImmutableFromMutable(ConciseSet conciseSet)
   {
     if (conciseSet == null || conciseSet.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
     int[] words = conciseSet.getWords();
     //IntList retVal = new IntList();
-    return new ImmutableConciseSet(IntBuffer.wrap(words));
+    return new ImmutableSecompaxSet(IntBuffer.wrap(words));
     //IntBuffer buffer =  IntBuffer.wrap(retVal.toArray());
     //return new ImmutableConciseSet(buffer);
   }
@@ -53,57 +53,57 @@ public class ImmutableConciseSet
     return (x < y) ? -1 : ((x == y) ? 0 : 1);
   }
 
-  public static ImmutableConciseSet union(ImmutableConciseSet... sets)
+  public static ImmutableSecompaxSet union(ImmutableSecompaxSet... sets)
   {
     return union(Arrays.asList(sets));
   }
 
-  public static ImmutableConciseSet union(Iterable<ImmutableConciseSet> sets)
+  public static ImmutableSecompaxSet union(Iterable<ImmutableSecompaxSet> sets)
   {
     return union(sets.iterator());
   }
 
-  public static ImmutableConciseSet union(Iterator<ImmutableConciseSet> sets)
+  public static ImmutableSecompaxSet union(Iterator<ImmutableSecompaxSet> sets)
   {
-    ImmutableConciseSet partialResults = doUnion(Iterators.limit(sets, CHUNK_SIZE));
+	  ImmutableSecompaxSet partialResults = doUnion(Iterators.limit(sets, CHUNK_SIZE));
     while (sets.hasNext()) {
-      final UnmodifiableIterator<ImmutableConciseSet> partialIter = Iterators.singletonIterator(partialResults);
-      partialResults = doUnion(Iterators.<ImmutableConciseSet>concat(partialIter, Iterators.limit(sets, CHUNK_SIZE)));
+      final UnmodifiableIterator<ImmutableSecompaxSet> partialIter = Iterators.singletonIterator(partialResults);
+      partialResults = doUnion(Iterators.<ImmutableSecompaxSet>concat(partialIter, Iterators.limit(sets, CHUNK_SIZE)));
     }
     return partialResults;
   }
 
-  public static ImmutableConciseSet intersection(ImmutableConciseSet... sets)
+  public static ImmutableSecompaxSet intersection(ImmutableSecompaxSet... sets)
   {
     return intersection(Arrays.asList(sets));
   }
 
-  public static ImmutableConciseSet intersection(Iterable<ImmutableConciseSet> sets)
+  public static ImmutableSecompaxSet intersection(Iterable<ImmutableSecompaxSet> sets)
   {
     return intersection(sets.iterator());
   }
 
-  public static ImmutableConciseSet intersection(Iterator<ImmutableConciseSet> sets)
+  public static ImmutableSecompaxSet intersection(Iterator<ImmutableSecompaxSet> sets)
   {
-    ImmutableConciseSet partialResults = doIntersection(Iterators.limit(sets, CHUNK_SIZE));
+    ImmutableSecompaxSet partialResults = doIntersection(Iterators.limit(sets, CHUNK_SIZE));
     while (sets.hasNext()) {
-      final UnmodifiableIterator<ImmutableConciseSet> partialIter = Iterators.singletonIterator(partialResults);
+      final UnmodifiableIterator<ImmutableSecompaxSet> partialIter = Iterators.singletonIterator(partialResults);
       partialResults = doIntersection(
-          Iterators.<ImmutableConciseSet>concat(Iterators.limit(sets, CHUNK_SIZE), partialIter)
+          Iterators.<ImmutableSecompaxSet>concat(Iterators.limit(sets, CHUNK_SIZE), partialIter)
       );
     }
     return partialResults;
   }
 
-  public static ImmutableConciseSet complement(ImmutableConciseSet set)
+  public static ImmutableSecompaxSet complement(ImmutableSecompaxSet set)
   {
     return doComplement(set);
   }
 
-  public static ImmutableConciseSet complement(ImmutableConciseSet set, int length)
+  public static ImmutableSecompaxSet complement(ImmutableSecompaxSet set, int length)
   {
     if (length <= 0) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
 
     // special case when the set is empty and we need a concise set of ones
@@ -112,7 +112,7 @@ public class ImmutableConciseSet
       for (int i = 0; i < length; i++) {
         newSet.add(i);
       }
-      return ImmutableConciseSet.newImmutableFromMutable(newSet);
+      return ImmutableSecompaxSet.newImmutableFromMutable(newSet);
     }
 
     IntList retVal = new IntList();
@@ -175,53 +175,20 @@ public class ImmutableConciseSet
     trimZeros(retVal);
 
     if (retVal.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
-    return compact(new ImmutableConciseSet(IntBuffer.wrap(retVal.toArray())));
+    return compact(new ImmutableSecompaxSet(IntBuffer.wrap(retVal.toArray())));
   }
-  public static ImmutableConciseSet compact(ConciseSet set)
-  {
-    IntList retVal = new IntList();
-    final ByteBuffer bb = set.toByteBuffer();
-    ImmutableConciseSet set_new = new ImmutableConciseSet(bb);
-    WordIterator itr = set_new.newWordIterator();
-    while (itr.hasNext()) {
-      addAndCompact(retVal, itr.next(),true);
-    }
-    IntBuffer buffer =  IntBuffer.wrap(retVal.toArray());
-    return new ImmutableConciseSet(buffer);
-  }
-  public static ImmutableConciseSet compact(ImmutableConciseSet set)
+
+  public static ImmutableSecompaxSet compact(ImmutableSecompaxSet set)
   {
     IntList retVal = new IntList();
     WordIterator itr = set.newWordIterator();
     while (itr.hasNext()) {
-      addAndCompact(retVal, itr.next(),false);
+      addAndCompact(retVal, itr.next());
     }
     IntBuffer buffer =  IntBuffer.wrap(retVal.toArray());
-    return new ImmutableConciseSet(buffer);
-  }
-  public static ImmutableConciseSet compact(ImmutableConciseSet set, boolean isConcise)
-  {
-    IntList retVal = new IntList();
-    WordIterator itr = set.newWordIterator();
-    while (itr.hasNext()) {
-      addAndCompact(retVal, itr.next(),isConcise);
-    }
-    IntBuffer buffer =  IntBuffer.wrap(retVal.toArray());
-    return new ImmutableConciseSet(buffer);
-  }
-  public static ImmutableConciseSet compact(ConciseSet set, boolean isConcise)
-  {
-    IntList retVal = new IntList();
-    final ByteBuffer bb = set.toByteBuffer();
-    ImmutableConciseSet set_new = new ImmutableConciseSet(bb);
-    WordIterator itr = set_new.newWordIterator();
-    while (itr.hasNext()) {
-      addAndCompact(retVal, itr.next(),isConcise);
-    }
-    IntBuffer buffer =  IntBuffer.wrap(retVal.toArray());
-    return new ImmutableConciseSet(buffer);
+    return new ImmutableSecompaxSet(buffer);
   }
   
   public static int ConvertFill(int word)
@@ -254,13 +221,11 @@ public class ImmutableConciseSet
 			  }
 		  }
 	  }
-	  
 	  return word;
   }
-  private static void addAndCompact(IntList set, int wordToAdd, boolean isConcise)		//¸Ä
+  private static void addAndCompact(IntList set, int wordToAdd)		//¸Ä
   {
     int length = set.length();
-    if(isConcise)
     wordToAdd = ConvertFill(wordToAdd);
     if (set.isEmpty()) {
       set.add(wordToAdd);
@@ -445,7 +410,7 @@ public class ImmutableConciseSet
       set.add(wordToAdd);
   }
 
-  private static ImmutableConciseSet doUnion(Iterator<ImmutableConciseSet> sets)
+  private static ImmutableSecompaxSet doUnion(Iterator<ImmutableSecompaxSet> iterator)
   {
     IntList retVal = new IntList();
 
@@ -491,8 +456,8 @@ public class ImmutableConciseSet
     ).create();
 
     // populate priority queue
-    while (sets.hasNext()) {
-      ImmutableConciseSet set = sets.next();
+    while (iterator.hasNext()) {
+      ImmutableSecompaxSet set = iterator.next();
 
       if (set != null && !set.isEmpty()) {
         WordIterator itr = set.newWordIterator();
@@ -514,7 +479,7 @@ public class ImmutableConciseSet
       // if the next word in the queue starts at a different point than where we ended off we need to create a zero gap
       // to fill the space
       if (currIndex < itr.startIndex) {
-        addAndCompact(retVal, itr.startIndex - currIndex,false);
+        addAndCompact(retVal, itr.startIndex - currIndex);
         currIndex = itr.startIndex;
       }
 
@@ -557,7 +522,7 @@ public class ImmutableConciseSet
           int position = Integer.numberOfTrailingZeros(flipBitLiteral) + 1;
           newWord |= (position << 25);
         }*/
-        addAndCompact(retVal, word,false);
+        addAndCompact(retVal, word);
         currIndex = itr.wordsWalked;
 
         if (itr.hasNext()) {
@@ -599,7 +564,7 @@ public class ImmutableConciseSet
         }
 
         // advance the set with the current literal forward and push result back to priority queue
-        addAndCompact(retVal, word, false);
+        addAndCompact(retVal, word);
         currIndex++;
 
         if (itr.hasNext()) {
@@ -632,12 +597,12 @@ public class ImmutableConciseSet
     }
 
     if (retVal.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
-    return new ImmutableConciseSet(IntBuffer.wrap(retVal.toArray()));
+    return new ImmutableSecompaxSet(IntBuffer.wrap(retVal.toArray()));
   }
 
-  public static ImmutableConciseSet doIntersection(Iterator<ImmutableConciseSet> sets)
+  public static ImmutableSecompaxSet doIntersection(Iterator<ImmutableSecompaxSet> sets)
   {
     IntList retVal = new IntList();
 
@@ -684,10 +649,10 @@ public class ImmutableConciseSet
 
     // populate priority queue
     while (sets.hasNext()) {
-      ImmutableConciseSet set = sets.next();
+      ImmutableSecompaxSet set = sets.next();
 
       if (set == null || set.isEmpty()) {
-        return new ImmutableConciseSet();
+        return new ImmutableSecompaxSet();
       }
 
       WordIterator itr = set.newWordIterator();
@@ -715,7 +680,7 @@ public class ImmutableConciseSet
       // to fill the space
       if (currIndex < itr.startIndex) {
         // number of 31 bit blocks that compromise the fill minus one
-        addAndCompact(retVal, (0x10000000 | (itr.startIndex - currIndex)),false);
+        addAndCompact(retVal, (0x10000000 | (itr.startIndex - currIndex)));
         currIndex = itr.startIndex;
       }
 
@@ -759,7 +724,7 @@ public class ImmutableConciseSet
           int position = Integer.numberOfTrailingZeros(flipBitLiteral) + 1;
           newWord = (word & 0xC1FFFFFF) | (position << 25);
         }*/
-        addAndCompact(retVal, word, false);
+        addAndCompact(retVal, word);
         currIndex = itr.wordsWalked;
 
         if (itr.hasNext()) {
@@ -807,7 +772,7 @@ public class ImmutableConciseSet
         }
 
         // advance the set with the current literal forward and push result back to priority queue
-        addAndCompact(retVal, word, false);
+        addAndCompact(retVal, word);
         currIndex++;
 
         if (itr.hasNext()) {
@@ -854,19 +819,19 @@ public class ImmutableConciseSet
 
     // fill in any missing one sequences
     if (currIndex < wordsWalkedAtSequenceEnd) {
-      addAndCompact(retVal, (0x10000000 | (wordsWalkedAtSequenceEnd - currIndex)),false);
+      addAndCompact(retVal, (0x10000000 | (wordsWalkedAtSequenceEnd - currIndex)));
     }
 
     if (retVal.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
-    return new ImmutableConciseSet(IntBuffer.wrap(retVal.toArray()));
+    return new ImmutableSecompaxSet(IntBuffer.wrap(retVal.toArray()));
   }
 
-  public static ImmutableConciseSet doComplement(ImmutableConciseSet set)
+  public static ImmutableSecompaxSet doComplement(ImmutableSecompaxSet set)
   {
     if (set == null || set.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
 
     IntList retVal = new IntList();
@@ -901,9 +866,9 @@ public class ImmutableConciseSet
     trimZeros(retVal);
 
     if (retVal.isEmpty()) {
-      return new ImmutableConciseSet();
+      return new ImmutableSecompaxSet();
     }
-    return new ImmutableConciseSet(IntBuffer.wrap(retVal.toArray()));
+    return new ImmutableSecompaxSet(IntBuffer.wrap(retVal.toArray()));
   }
 
   // Based on the ConciseSet implementation by Alessandro Colantonio
@@ -937,21 +902,21 @@ public class ImmutableConciseSet
   {
 	  return words.array();
   }
-  public ImmutableConciseSet()
+  public ImmutableSecompaxSet()
   {
     this.words = null;
     this.lastWordIndex = -1;
     this.size = 0;
   }
 
-  public ImmutableConciseSet(ByteBuffer byteBuffer)
+  public ImmutableSecompaxSet(ByteBuffer byteBuffer)
   {
     this.words = byteBuffer.asIntBuffer();
     this.lastWordIndex = words.capacity() - 1;
     this.size = calcSize();
   }
 
-  public ImmutableConciseSet(IntBuffer buffer)
+  public ImmutableSecompaxSet(IntBuffer buffer)
   {
     this.words = buffer;
     this.lastWordIndex = (words == null || buffer.capacity() == 0) ? -1 : words.capacity() - 1;
@@ -1339,7 +1304,7 @@ public class ImmutableConciseSet
     throw new IndexOutOfBoundsException(Integer.toString(i));
   }
 
-  public int compareTo(ImmutableConciseSet other)
+  public int compareTo(ImmutableSecompaxSet other)
   {
     return words.asReadOnlyBuffer().compareTo(other.words.asReadOnlyBuffer());
   }
@@ -1813,17 +1778,15 @@ public class ImmutableConciseSet
     		if(ConciseSetUtils.is0L1_F_0L2(currWord) || ConciseSetUtils.is0L_F_1L(currWord)
     				|| ConciseSetUtils.is1L_F_0L(currWord) || ConciseSetUtils.is1L1_F_1L2(currWord))
     		{
-    			int []words;
+    			int []words = new int [3];
     			int filltype;
-      			int fillnum;
-        	    int []literalbyte;
-        	    int []literalPos;
-        	    
-    			words = new int [3];
+    			int fillnum = 0;
+    			int []literalbyte;
+    			int []literalPos;
+    			if(flcount == 0)
+    			{
     			filltype = (currWord & 0x00800000) >>> 23;
       			fillnum = (currWord & 0x007f0000) >>> 16;
-        	    if(flcount == 0)
-              	{
         	    literalbyte = ConciseSetUtils.getLFLLiteralWords(currWord);
         	    literalPos = new int [2];
         	    literalPos[0] = (currWord & 0x0c000000) >>> 26;
@@ -1887,7 +1850,7 @@ public class ImmutableConciseSet
         	    	}
         	    }
         	    words[1] = (filltype << 28) | fillnum;
-        	    }
+    			}
         	    if(flcount == 0)
         	    {
         	    	startIndex = wordsWalked;
@@ -1926,8 +1889,6 @@ public class ImmutableConciseSet
     		    	  int literaltype = (currWord & 0x08000000) >>> 27;
     		          int literalbyte = (currWord & 0x0000ff00) >>> 8;
     		          int literalPos = (currWord & 0x03000000) >>> 24;
-            	      if(flcount == 0)
-            	      {
     		    	  filltype[0] = (currWord & 0x10000000) >>> 28;
     		          filltype[1] = (currWord & 0x04000000) >>> 26;
     		          fillnum[0] = (currWord & 0x00ff0000) >>> 16;
@@ -1950,7 +1911,6 @@ public class ImmutableConciseSet
     		    		  }
     		    		   
     		    	  }
-            	      }
     		    	  if(flcount == 0)
     		    	  {
     		    		  startIndex = wordsWalked;
